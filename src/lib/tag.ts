@@ -3,31 +3,28 @@ import { RestEndpointMethodTypes } from '@octokit/rest';
 import { EOL } from 'os';
 import { GitHub, repo } from '.';
 import { githubSha, headBranch } from './envs';
+import { TagData } from './inputs';
 
 
 export default class Tag {
-  tags?: RestEndpointMethodTypes["repos"]["listTags"]["response"];
-  message = '';
-  doesExist = false;
+  private tags?: RestEndpointMethodTypes["repos"]["listTags"]["response"];
+  private message?: string;
+  private doesExist?: boolean;
   public sha = '';
   public uri = '';
   public ref = '';
 
   public constructor(private readonly github: GitHub,
     private readonly repoData: repo,
-    private readonly prefix: string,
     private readonly version: string,
-    private readonly postfix: string) {
+    private readonly tagData: TagData) {
+    if (tagData.message) {
+      this.message = tagData.message;
+    }
   }
 
   get name() {
-    return `${this.prefix.trim()}${this.version.trim()}${this.postfix.trim()}`;
-  }
-
-  setMessage(value: string) {
-    if (value && value.length > 0) {
-      this.message = value;
-    }
+    return `${this.tagData.prefix.trim()}${this.version.trim()}${this.tagData.suffix.trim()}`;
   }
 
   get prerelease() {
@@ -38,8 +35,8 @@ export default class Tag {
     return /([0-9.]{5}(\+[\w.0-9]+)?)/i.test(this.version);
   }
 
-  async getMessage() {
-    if (this.message !== null) {
+  async getMessage(): Promise<string> {
+    if (this.message) {
       return this.message;
     }
 
@@ -53,6 +50,9 @@ export default class Tag {
       }
 
       const base = tags.shift()?.name;
+      if (!base) {
+        throw new Error("Base could not be obtained");
+      }
       const basehead = `${base}...${headBranch()}`;
       const changelog = await this.github.rest.repos.compareCommitsWithBasehead({ owner, repo, basehead });
       const tpl = (core.getInput('commit_message_template', { required: false }) || '').trim();
@@ -115,7 +115,6 @@ export default class Tag {
     const tagexists = await this.exists();
 
     if (!tagexists) {
-
       const { owner, repo } = this.repoData;
       const sha: string = githubSha();
       // Create tag
@@ -161,9 +160,15 @@ export default class Tag {
     }
   }
 
-  stringify() {
-    const values = { name: this.name, sha: this.sha, uri: this.uri, message: this.message, ref: this.ref };
-    return JSON.stringify(values);
+  get values() {
+    const values = {
+      name: this.name,
+      sha: this.sha,
+      uri: this.uri,
+      message: this.message,
+      ref: this.ref
+    };
+    return values
   }
 }
 

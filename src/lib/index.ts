@@ -13,3 +13,5 @@ export type repo = {
     owner: string;
     repo: string;
 }
+
+export type Strategy = 'docker'|'package'|'regex';
