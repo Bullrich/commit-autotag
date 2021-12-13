@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'fs';
+import path from 'path';
 import { workspace } from './envs';
 
 type PackageJson = {
@@ -10,14 +10,14 @@ export default class Package {
   private readonly data: PackageJson;
 
   constructor(root = './') {
-    root = path.join(workspace(), root)
+    root = path.join(workspace(), root);
 
     if (fs.statSync(root).isDirectory()) {
-      root = path.join(root, 'package.json')
+      root = path.join(root, 'package.json');
     }
 
     if (!fs.existsSync(root)) {
-      throw new Error(`package.json does not exist at ${root}.`)
+      throw new Error(`package.json does not exist at ${root}.`);
     }
 
     const packageContent = fs.readFileSync(root);
@@ -26,6 +26,6 @@ export default class Package {
   }
 
   get version() {
-    return this.data.version
+    return this.data.version;
   }
 }

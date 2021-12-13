@@ -21,41 +21,41 @@ export default class Tag {
   }
 
   get name() {
-    return `${this.prefix.trim()}${this.version.trim()}${this.postfix.trim()}`
+    return `${this.prefix.trim()}${this.version.trim()}${this.postfix.trim()}`;
   }
 
   setMessage(value: string) {
     if (value && value.length > 0) {
-      this.message = value
+      this.message = value;
     }
   }
 
   get prerelease() {
-    return /([0-9.]{5}(-[\w.0-9]+)?)/i.test(this.version)
+    return /([0-9.]{5}(-[\w.0-9]+)?)/i.test(this.version);
   }
 
   get build() {
-    return /([0-9.]{5}(\+[\w.0-9]+)?)/i.test(this.version)
+    return /([0-9.]{5}(\+[\w.0-9]+)?)/i.test(this.version);
   }
 
   async getMessage() {
     if (this.message !== null) {
-      return this.message
+      return this.message;
     }
 
     const { owner, repo } = this.repoData;
 
     try {
-      const tags = await this.getTags()
+      const tags = await this.getTags();
 
       if (!tags || tags.length === 0) {
-        return `Version ${this.version}`
+        return `Version ${this.version}`;
       }
 
       const base = tags.shift()?.name;
       const basehead = `${base}...${headBranch()}`;
       const changelog = await this.github.rest.repos.compareCommitsWithBasehead({ owner, repo, basehead });
-      const tpl = (core.getInput('commit_message_template', { required: false }) || '').trim()
+      const tpl = (core.getInput('commit_message_template', { required: false }) || '').trim();
 
       return changelog.data.commits
         .map(
@@ -66,15 +66,15 @@ export default class Tag {
                 .replace(/\{\{\s?(message)\s?\}\}/gi, commit.commit.message)
                 .replace(/\{\{\s?(author)\s?\}\}/gi, commit.author ? (commit.author.login ?? '') : '')
                 .replace(/\{\{\s?(sha)\s?\}\}/gi, commit.sha)
-                .trim() + '\n'
+                .trim() + '\n';
             } else {
               return `${i === 0 ? '\n' : ''}${i + 1}) ${commit.commit.message}${commit.author?.login
                 ? ` (${commit.author.login})`
                 : ''
-                }\n(SHA: ${commit.sha})\n`
+                }\n(SHA: ${commit.sha})\n`;
             }
           })
-        .join('\n')
+        .join('\n');
     } catch (e) {
       core.warning('Failed to generate changelog from commits: ' + (e as { message: string }).message + EOL);
       return `Version ${this.version}`;
@@ -83,36 +83,36 @@ export default class Tag {
 
   async getTags() {
     if (this.tags) {
-      return this.tags.data
+      return this.tags.data;
     }
 
     const { owner, repo } = this.repoData;
 
-    this.tags = await this.github.rest.repos.listTags({ owner, repo, per_page: 100 })
+    this.tags = await this.github.rest.repos.listTags({ owner, repo, per_page: 100 });
 
-    return this.tags.data
+    return this.tags.data;
   }
 
   async exists() {
     if (this.doesExist !== null) {
-      return this.doesExist
+      return this.doesExist;
     }
-    const currentTag = this.name
-    const tags = await this.getTags()
+    const currentTag = this.name;
+    const tags = await this.getTags();
 
     for (const tag of tags) {
       if (tag.name === currentTag) {
-        this.doesExist = true
-        return true
+        this.doesExist = true;
+        return true;
       }
     }
 
-    this.doesExist = false
-    return false
+    this.doesExist = false;
+    return false;
   }
 
   async push() {
-    const tagexists = await this.exists()
+    const tagexists = await this.exists();
 
     if (!tagexists) {
 
@@ -126,13 +126,13 @@ export default class Tag {
         message: await this.getMessage(),
         object: sha,
         type: 'commit'
-      })
+      });
 
-      this.sha = newTag.data.sha
-      core.warning(`Created new tag: ${newTag.data.tag}`)
+      this.sha = newTag.data.sha;
+      core.warning(`Created new tag: ${newTag.data.tag}`);
 
       // Create reference
-      let newReference
+      let newReference;
 
       try {
         newReference = await this.github.rest.git.createRef({
@@ -140,24 +140,24 @@ export default class Tag {
           repo,
           ref: `refs/tags/${newTag.data.tag}`,
           sha: newTag.data.sha
-        })
+        });
       } catch (e) {
         core.warning(JSON.stringify({
           owner,
           repo,
           ref: `refs/tags/${newTag.data.tag}`,
           sha: newTag.data.sha
-        }))
+        }));
 
-        throw e
+        throw e;
       }
 
-      this.uri = newReference.data.url
-      this.ref = newReference.data.ref
+      this.uri = newReference.data.url;
+      this.ref = newReference.data.ref;
 
-      core.warning(`Reference ${newReference.data.ref} available at ${newReference.data.url}` + EOL)
+      core.warning(`Reference ${newReference.data.ref} available at ${newReference.data.url}` + EOL);
     } else {
-      core.warning('Cannot push tag (it already exists).')
+      core.warning('Cannot push tag (it already exists).');
     }
   }
 

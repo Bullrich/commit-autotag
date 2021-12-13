@@ -8,11 +8,11 @@ const workspace = () => {
 
     const workspaceEnv = process.env.GITHUB_WORKSPACE;
     if (!workspaceEnv) {
-        throw new MissingEnvVariableError("GITHUB_WORKSPACE")
+        throw new MissingEnvVariableError("GITHUB_WORKSPACE");
     }
 
     return workspaceEnv;
-}
+};
 
 const githubSha = () => {
     const sha = process.env.GITHUB_SHA;
@@ -21,7 +21,7 @@ const githubSha = () => {
     }
 
     return sha;
-}
+};
 
 const githubToken = () => {
     const token = process.env.GITHUB_TOKEN;
@@ -30,11 +30,11 @@ const githubToken = () => {
     }
 
     return token;
-}
+};
 
 const headBranch = () => {
     const head = process.env.HEAD_BRANCH ?? "master";
     return head;
-}
+};
 
 export { workspace, githubSha, githubToken, headBranch };
