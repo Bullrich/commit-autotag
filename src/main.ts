@@ -85,13 +85,6 @@ function getVersion(strategy: string, root: string) {
             core.setOutput('tag', tag.stringify);
             core.setOutput('tagcreated', 'yes');
         } catch (error) {
-            core.warning(error as Error);
-            core.setOutput('tagname', '');
-            core.setOutput('tagsha', '');
-            core.setOutput('taguri', '');
-            core.setOutput('tagmessage', '');
-            core.setOutput('tagref', '');
-            core.setOutput('tagcreated', 'no');
             core.setFailed(error as Error);
         }
     }
