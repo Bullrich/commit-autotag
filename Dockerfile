@@ -1,4 +1,4 @@
-FROM node:17-alpine as Builder
+FROM node:14-alpine as Builder
 
 WORKDIR /action
 
@@ -8,10 +8,10 @@ RUN npm ci
 
 ADD src ./src
 
-RUN npm run build
+RUN npm run pack
 
-FROM node:17-slim
+FROM node:14-slim
 
-COPY --from=Builder /action/dist /action/dist
+COPY --from=Builder /action/build /action
 
-CMD ["node", "/action/dist/main.js"]
+CMD ["node", "/action/index.js"]
