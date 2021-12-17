@@ -1,5 +1,7 @@
 # Autotag
 
+![Continuous testing](https://github.com/Bullrich/commit-autotag/workflows/Continuous%20testing/badge.svg?event=push)
+
 This action is a rewrite from [butlerlogic/action-autotag](https://github.com/butlerlogic/action-autotag).
 
 Logic has been adapted, dependencies have been updated and the language has been rewriten in Typescript (and tests have been added).
